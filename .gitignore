@@ -1,0 +1,7 @@
+node_modules/
+.cache/
+public
+
+# dotenv environment variable files and private keys
+.env*
+service-account.json
