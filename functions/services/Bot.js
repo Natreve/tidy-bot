@@ -1,7 +1,6 @@
-import { Bot, session } from "grammy";
+import { Bot, session, webhookCallback } from "grammy";
 import { freeStorage } from "@grammyjs/storage-free";
 import { logger } from "firebase-functions";
-import { InlineKeyboard } from "grammy";
 import * as commands from "./Commands.js";
 import * as actions from "./Actions.js";
 
@@ -47,5 +46,5 @@ export default async () => {
   });
   await bot.start({ allowed_updates: true });
 
-  return bot;
+  return { tidy: bot, webhookCallback };
 };

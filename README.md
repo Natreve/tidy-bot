@@ -9,7 +9,7 @@ The PubSub emulator does not yet support scheduled functions.
 ```shell
 firebase functions:shell
 
-firebase > setInterval(() => taskRunner(), 60000)
+firebase > setInterval(() => ticker(), 60000)
 ```
 
-This will run the taskRunner function every 60 seconds.
+This will run the ticker function every 60 seconds.

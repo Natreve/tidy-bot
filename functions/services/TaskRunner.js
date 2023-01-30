@@ -24,7 +24,10 @@ async function sendReminders(cb = () => {}) {
     jobs.push(job);
   });
   // Execute all jobs concurrently
-  return await Promise.all(jobs);
+  const results = await Promise.all(jobs);
+
+  
+  return results;
 }
 async function syncWithCalendars(name, url) {
   try {
@@ -61,7 +64,6 @@ async function syncWithCalendars(name, url) {
             worker: "reminder",
             options: {
               name,
-              gid: null,
               claimed: null,
             },
           });
