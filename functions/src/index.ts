@@ -27,22 +27,15 @@ export const ticker = functions
   .runWith({ memory: "2GB" })
   .pubsub.schedule("every 1 minutes")
   .onRun(async (ctx) => {
+    const c1 = { name: "Harbour Drive", url: process.env.HARBOURDRIVE };
+    const c2 = { name: "Coralway", url: process.env.CORLWAY };
+    
     jobs
-      .syncCalendar(
-        { name: "Harbour Drive", url: process.env.HARBOURDRIVE },
-        (jobs, message) => onJobs(`${jobs.length} ${message}`)
-      )
-      .catch((err) => {
-        logger.error(err);
-      });
+      .syncCalendar(c1, (jobs, message) => onJobs(`${jobs.length} ${message}`))
+      .catch((err) => logger.error(err));
     jobs
-      .syncCalendar(
-        { name: "Coralway", url: process.env.CORLWAY },
-        (jobs, message) => onJobs(`${jobs.length} ${message}`)
-      )
-      .catch((err) => {
-        logger.error(err);
-      });
+      .syncCalendar(c2, (jobs, message) => onJobs(`${jobs.length} ${message}`))
+      .catch((err) => logger.error(err));
   });
 
 export const TidyBot = functions.https.onRequest(app);

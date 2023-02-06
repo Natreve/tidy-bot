@@ -34,7 +34,6 @@ pm.command("claim", commands.claim);
 pm.command("claimed", commands.claimed);
 pm.command("jobs", commands.unclaimed);
 pm.command("unclaim", commands.unclaim);
-pm.command("settings", commands.settings);
 
 // bot.on(":new_chat_members", actions.join);
 // bot.on(":left_chat_member", actions.leave);

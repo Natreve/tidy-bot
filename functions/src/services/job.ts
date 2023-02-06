@@ -46,11 +46,11 @@ export type JobUpdate = {
 export const get = async (id: string | string[]) => {
   const firestore = admin.firestore();
   const db = firestore.collection("jobs");
-  const jobs: Job[] = [];
+  const jobs: FirebaseJob[] = [];
   try {
     if (typeof id === "string") {
       const snapshot = await db.doc(id).get();
-      const data = snapshot.data() as Job;
+      const data = snapshot.data() as FirebaseJob;
       if (data) jobs.push(data);
       return jobs;
     }
@@ -58,7 +58,7 @@ export const get = async (id: string | string[]) => {
     const querySnapshots = await db.where("id", "in", id).get();
 
     querySnapshots.forEach((querySnapshot) => {
-      if (querySnapshot.exists) jobs.push(querySnapshot.data() as Job);
+      if (querySnapshot.exists) jobs.push(querySnapshot.data() as FirebaseJob);
     });
 
     return jobs;
@@ -204,37 +204,86 @@ export const syncCalendar = async (
   }
 };
 export const claim = async (uid: string, id: string | string[]) => {
-  const claims: Job[] = [];
-  if (Array.isArray(id)) {
-    const jobs = await get(id);
-    jobs.forEach((job) => {
-      if (!job?.assigned) claims.push(job);
-    });
-    if (claims.length) {
-      let ids = claims.map(({ id }) => id);
-      await update(ids, { assigned: uid });
-      return claims;
+  try {
+    const claims: FirebaseJob[] = [];
+    if (Array.isArray(id)) {
+      const jobs: FirebaseJob[] = await get(id);
+      jobs.forEach((job) => {
+        if (!job?.assigned) claims.push(job);
+      });
+      if (claims.length) {
+        let ids = claims.map(({ id }) => id);
+        await update(ids, { assigned: uid });
+        return claims;
+      }
+      return null;
+    }
+    const job = await get(id);
+    if (!job[0]?.assigned) {
+      await update(job[0].id, { assigned: uid });
+      return job;
     }
     return null;
+  } catch (error) {
+    throw new Error("Error claiming job", { cause: error });
   }
-  const job = await get(id);
-  if (!job[0].assigned) {
-    await update(job[0].id, { assigned: uid });
-    return job;
-  }
-  return null;
 };
 export const claimed = async (uid: string) => {
-  const firestore = admin.firestore();
-  const db = firestore.collection("jobs");
-  const jobs: FirebaseJob[] = [];
-  const querySnapshots = await db.where("assigned", "==", uid).get();
-  if (querySnapshots.empty) return null;
+  try {
+    const firestore = admin.firestore();
+    const db = firestore.collection("jobs");
+    const jobs: FirebaseJob[] = [];
+    const querySnapshots = await db.where("assigned", "==", uid).get();
+    if (querySnapshots.empty) return null;
 
-  querySnapshots.forEach((querySnapshot) => {
-    jobs.push(querySnapshot.data() as FirebaseJob);
-  });
-  return jobs;
+    querySnapshots.forEach((querySnapshot) => {
+      jobs.push(querySnapshot.data() as FirebaseJob);
+    });
+    return jobs;
+  } catch (error) {
+    throw new Error("Error getting claims", { cause: error });
+  }
 };
-export const unclaim = async (uid: string, id: string | string[]) => {};
-export const unclaimed = async () => {};
+export const unclaim = async (uid: string, id: string | string[]) => {
+  try {
+    const firestore = admin.firestore();
+    const db = firestore.collection("jobs");
+    const jobs: FirebaseJob[] = [];
+    if (Array.isArray(id)) {
+      const snapshots = await db
+        .where("id", "in", id)
+        .where("assigned", "==", uid)
+        .get();
+      if (snapshots.empty) return null;
+      snapshots.forEach((snapshot) =>
+        jobs.push(snapshot.data() as FirebaseJob)
+      );
+      return jobs;
+    }
+    const snapshot = await db
+      .where("id", "==", id)
+      .where("assigned", "==", uid)
+      .limit(1)
+      .get();
+    if (snapshot.empty) return null;
+    jobs.push(snapshot.docs[0].data() as FirebaseJob);
+    return jobs;
+  } catch (error) {
+    throw new Error("Error unclaiming jobs", { cause: error });
+  }
+};
+export const unclaimed = async () => {
+  try {
+    const firestore = admin.firestore();
+    const db = firestore.collection("jobs");
+    const jobs: FirebaseJob[] = [];
+    const snapshots = await db.where("assigned", "==", null).get();
+
+    if (snapshots.empty) return null;
+
+    snapshots.forEach((snapshot) => jobs.push(snapshot.data() as FirebaseJob));
+    return jobs;
+  } catch (error) {
+    throw new Error("Error getting jobs", { cause: error });
+  }
+};
