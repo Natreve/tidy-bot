@@ -4,8 +4,8 @@ import Sugar from "sugar";
 import { Timestamp } from "firebase-admin/firestore";
 import { DateTime } from "luxon";
 import * as Task from "./task.js";
-type status = "claimed" | "unclaimed" | "completed";
-type CalendarType = { name: string; url: string };
+export type status = "claimed" | "unclaimed" | "completed";
+export type CalendarType = { name: string; url: string };
 export interface FirebaseJob {
   id: string;
   group: string | null;
@@ -24,18 +24,19 @@ export interface Job {
   assigned?: string;
   options?: { [key: string]: any };
 }
-interface Booking {
+export interface Booking {
   [key: string]: {
     id: string;
+    name: string;
     date: Date;
   };
 }
-type WebEvent = {
+export type WebEvent = {
   summary: string;
   end: Date;
   description: string;
 };
-type JobUpdate = {
+export type JobUpdate = {
   name?: string;
   date?: Date;
   status?: status;
@@ -95,7 +96,7 @@ export const update = async (id: string | string[], update: JobUpdate) => {
     throw Error("Error updating job/tasks", { cause: error });
   }
 };
-export const fetchBookings = async (url: string) => {
+export const fetchBookings = async (name: string, url: string) => {
   try {
     const bookingIDs: string[] = [];
     const bookings: Booking = {};
@@ -112,7 +113,7 @@ export const fetchBookings = async (url: string) => {
             "LLL dd yyyy 11:00a"
           )
         );
-        bookings[id] = { id, date };
+        bookings[id] = { id, name, date };
         bookingIDs.push(id);
       }
     }
@@ -122,41 +123,49 @@ export const fetchBookings = async (url: string) => {
     throw new Error("There was a issue getting the bookings", { cause: error });
   }
 };
-export const syncCalendar = async ({ name, url }: CalendarType) => {
+export const createJobsAndTasksFrom = (
+  bookings: Booking
+): [Job[], Task.Task[]] => {
+  const jobs: Job[] = [];
+  const tasks: Task.Task[] = [];
+  for (const key in bookings) {
+    const { id, name, date } = bookings[key];
+    const t1 = DateTime.fromJSDate(date).minus({ hour: 1 }).toJSDate();
+    const t2 = DateTime.fromJSDate(date).minus({ hour: 14 }).toJSDate();
+    tasks.push({ id, name, date: t1, status: "scheduled" });
+    tasks.push({ id, name, date: t2, status: "scheduled" });
+    jobs.push({
+      id,
+      date,
+      name,
+      status: "unclaimed",
+      group: null,
+    });
+  }
+  return [jobs, tasks];
+};
+export const syncCalendar = async (
+  { name, url }: CalendarType,
+  cb?: (x: Job[], reason: string) => void
+) => {
   const firestore = admin.firestore();
   const db = firestore.collection("jobs");
 
   try {
-    const bookings = await fetchBookings(url);
-    const jobs: Job[] = [];
-    const tasks: Task.Task[] = [];
-
+    const bookings = await fetchBookings(name, url);
     if (!bookings) return;
-    bookings["testID"] = { id: "testID", date: new Date() };
+    bookings["testID"] = { id: "testID", name, date: new Date() };
     const ids = Object.keys(bookings).map((id) => id);
     const querySnapshots = await db.where("id", "in", ids).get();
 
     //if the query turns up empty add all bookings as new jobs with their tasks
     if (querySnapshots.empty) {
-      for (const key in bookings) {
-        const { id, date } = bookings[key];
-        const t1 = DateTime.fromJSDate(date).minus({ hour: 1 }).toJSDate();
-        const t2 = DateTime.fromJSDate(date).minus({ hour: 14 }).toJSDate();
-        tasks.push({ id, name, date: t1, status: "scheduled" });
-        tasks.push({ id, name, date: t2, status: "scheduled" });
-        jobs.push({
-          id,
-          date,
-          name,
-          status: "unclaimed",
-          group: null,
-        });
-      }
+      const [jobs] = createJobsAndTasksFrom(bookings);
 
-      //add new jobs and tasks
-      await add(jobs);
-      //   await Task.add(tasks);
-
+      // add new jobs and tasks
+      // await add(jobs);
+      // await Task.add(tasks);
+      if (cb) cb(jobs, "Initial Jobs Added");
       return;
     }
     const taskUpdates: Task.TaskUpdate[] = [];
@@ -176,12 +185,19 @@ export const syncCalendar = async ({ name, url }: CalendarType) => {
         const t2 = DateTime.fromJSDate(date).minus({ hour: 14 }).toJSDate();
         taskUpdates.push({ date: t1 }, { date: t2 });
         jobUpdates.push({ date });
+        let data = job as unknown as Job; //case the FirebaseJob interface to a Job
+        data.date = date; //replace the FirebaseJob inteface date from Timestamp to Date
+        if (cb) cb([data], "Jobs Updated");
         return;
       }
     });
     //if there are bookings remaining, it indicates new bookings and should be added to jobs & tasks
     if (Object.keys(bookings).length) {
-      console.log("Most be called");
+      const [jobs] = createJobsAndTasksFrom(bookings);
+      // // send notification of the newly added jobs
+      // await add(jobs);
+      // await Task.add(tasks);
+      if (cb) cb(jobs, "New Jobs Added");
     }
   } catch (error) {
     throw Error("Error syncing calendar", { cause: error });
