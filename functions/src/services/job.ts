@@ -146,7 +146,7 @@ export const createJobsAndTasksFrom = (
 };
 export const syncCalendar = async (
   { name, url }: CalendarType,
-  cb?: (x: Job[], reason: string) => void
+  cb?: (x: Job[], message: string) => void
 ) => {
   const firestore = admin.firestore();
   const db = firestore.collection("jobs");
@@ -154,18 +154,18 @@ export const syncCalendar = async (
   try {
     const bookings = await fetchBookings(name, url);
     if (!bookings) return;
-    bookings["testID"] = { id: "testID", name, date: new Date() };
+    // bookings["testID"] = { id: "testID", name, date: new Date() };
     const ids = Object.keys(bookings).map((id) => id);
     const querySnapshots = await db.where("id", "in", ids).get();
 
     //if the query turns up empty add all bookings as new jobs with their tasks
     if (querySnapshots.empty) {
-      const [jobs] = createJobsAndTasksFrom(bookings);
+      const [jobs, tasks] = createJobsAndTasksFrom(bookings);
 
       // add new jobs and tasks
-      // await add(jobs);
-      // await Task.add(tasks);
-      if (cb) cb(jobs, "Initial Jobs Added");
+      await add(jobs);
+      await Task.add(tasks);
+      if (cb) cb(jobs, `New Jobs Added to ${name}`);
       return;
     }
     const taskUpdates: Task.TaskUpdate[] = [];
@@ -187,19 +187,54 @@ export const syncCalendar = async (
         jobUpdates.push({ date });
         let data = job as unknown as Job; //case the FirebaseJob interface to a Job
         data.date = date; //replace the FirebaseJob inteface date from Timestamp to Date
-        if (cb) cb([data], "Jobs Updated");
+        if (cb) cb([data], `Jobs Updated at ${name}`);
         return;
       }
     });
     //if there are bookings remaining, it indicates new bookings and should be added to jobs & tasks
     if (Object.keys(bookings).length) {
-      const [jobs] = createJobsAndTasksFrom(bookings);
+      const [jobs, tasks] = createJobsAndTasksFrom(bookings);
       // // send notification of the newly added jobs
-      // await add(jobs);
-      // await Task.add(tasks);
-      if (cb) cb(jobs, "New Jobs Added");
+      await add(jobs);
+      await Task.add(tasks);
+      if (cb) cb(jobs, `New Jobs Added at ${name}`);
     }
   } catch (error) {
     throw Error("Error syncing calendar", { cause: error });
   }
 };
+export const claim = async (uid: string, id: string | string[]) => {
+  const claims: Job[] = [];
+  if (Array.isArray(id)) {
+    const jobs = await get(id);
+    jobs.forEach((job) => {
+      if (!job?.assigned) claims.push(job);
+    });
+    if (claims.length) {
+      let ids = claims.map(({ id }) => id);
+      await update(ids, { assigned: uid });
+      return claims;
+    }
+    return null;
+  }
+  const job = await get(id);
+  if (!job[0].assigned) {
+    await update(job[0].id, { assigned: uid });
+    return job;
+  }
+  return null;
+};
+export const claimed = async (uid: string) => {
+  const firestore = admin.firestore();
+  const db = firestore.collection("jobs");
+  const jobs: FirebaseJob[] = [];
+  const querySnapshots = await db.where("assigned", "==", uid).get();
+  if (querySnapshots.empty) return null;
+
+  querySnapshots.forEach((querySnapshot) => {
+    jobs.push(querySnapshot.data() as FirebaseJob);
+  });
+  return jobs;
+};
+export const unclaim = async (uid: string, id: string | string[]) => {};
+export const unclaimed = async () => {};
