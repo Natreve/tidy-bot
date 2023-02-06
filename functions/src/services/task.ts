@@ -17,7 +17,7 @@ export interface Task {
   status: status;
   options?: { [key: string]: any };
 }
-type TaskUpdate = {
+export type TaskUpdate = {
   name?: string;
   date?: Date;
   status?: status;
@@ -52,7 +52,7 @@ export const add = async (tasks: Task | Task[]) => {
   const batch = firestore.batch();
   try {
     if (Array.isArray(tasks)) {
-      tasks.forEach((task) => batch.set(firestore.doc(task.id), task));
+      tasks.forEach((task) => batch.set(db.doc(task.id), task));
       await batch.commit();
       return;
     }
@@ -67,7 +67,7 @@ export const update = async (id: string | string[], update: TaskUpdate) => {
   const batch = firestore.batch();
   try {
     if (Array.isArray(id)) {
-      id.forEach((id) => batch.update(firestore.doc(id), update));
+      id.forEach((id) => batch.update(db.doc(id), update));
       await batch.commit();
       return;
     }

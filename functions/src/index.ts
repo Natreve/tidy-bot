@@ -11,7 +11,6 @@ const serviceAccount = fs.readJSONSync("../service-account.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-
 jobs.syncCalendar({ name: "Harbour Drive", url: process.env.HARBOURDRIVE });
 // const credential = admin.credential.applicationDefault();
 // admin.initializeApp({ credential });
@@ -28,4 +27,4 @@ jobs.syncCalendar({ name: "Harbour Drive", url: process.env.HARBOURDRIVE });
 
 //   });
 
-// // export const TidyBot = functions.https.onRequest(app);
+// export const TidyBot = functions.https.onRequest(app);
