@@ -22,7 +22,7 @@ function onJobs(message: string) {
   logger.log(message);
 }
 //Run this function every minute to perform a number of tasks
-export const ticker = functions
+export const Ticker = functions
   .runWith({ memory: "2GB" })
   .pubsub.schedule("every 1 minutes")
   .onRun(async (ctx) => {

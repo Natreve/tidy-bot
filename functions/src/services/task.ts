@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { DateTime } from "luxon";
 import * as Sugar from "sugar";
@@ -38,7 +38,8 @@ export const get = async (id: string | string[]) => {
     const querySnapshots = await db.where("id", "in", id).get();
 
     querySnapshots.forEach((querySnapshot) => {
-      if (querySnapshot.exists) tasks.push(querySnapshot.data() as FirebaseTask);
+      if (querySnapshot.exists)
+        tasks.push(querySnapshot.data() as FirebaseTask);
     });
 
     return tasks;
