@@ -37,10 +37,10 @@ export async function start(ctx: CommandContext<Context>) {
   //     keyboard.webApp(`${displayName}`, `${WEBAPP_URL}/?${u}`).row();
   keyboard.webApp(`View Schedule`, `${WEBAPP_URL}`).row();
   //   });
-  // return ctx.reply(`*Let's get started 🧼*\n\nChoose a Job to checkin\\!`, {
-  //   parse_mode: "MarkdownV2",
-  //   reply_markup: keyboard,
-  // });
+  return ctx.reply(`View Calendar Schedules`, {
+    parse_mode: "MarkdownV2",
+    reply_markup: keyboard,
+  });
   // return ctx.reply(`*Let's get started 🧼*\n\nChoose a Job to checkin\\!`, {
   //   parse_mode: "MarkdownV2",
   //   reply_markup: keyboard,

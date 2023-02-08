@@ -1,6 +1,5 @@
 import * as dotenv from "dotenv";
 import { Bot, webhookCallback } from "grammy";
-// import { freeStorage } from "@grammyjs/storage-free";
 import * as commands from "./commands.js";
 import * as actions from "./actions.js";
 dotenv.config();
