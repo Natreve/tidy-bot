@@ -86,8 +86,8 @@ export const execute = async (cb: (task: FirebaseTask) => void) => {
     .where("date", "<=", now)
     .where("status", "==", "scheduled")
     .get();
+  if (querySnapshots.empty) return;
   querySnapshots.forEach((querySnapshot) => {
-    if (!querySnapshot.exists) return;
     const task = querySnapshot.data() as FirebaseTask;
     const nowdate = Sugar.Date.create(
       DateTime.fromJSDate(now).toFormat("LLL dd yyyy hh:mma")
