@@ -9,7 +9,7 @@
         "firebase-debug.log",
         "firebase-debug.*.log"
       ],
-      "predeploy": "npm --prefix functions run build"
+      "predeploy": []
     }
   ],
   "emulators": {

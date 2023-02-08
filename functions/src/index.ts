@@ -4,7 +4,6 @@ import express from "express";
 import { bot, webhookCallback } from "./services/bot.js";
 // import fs from "fs-extra";
 import * as dotenv from "dotenv";
-// import { bot } from "./services/bot.js";
 import * as jobs from "./services/job.js";
 dotenv.config();
 

@@ -1,4 +1,4 @@
-import { CommandContext, Context } from "grammy";
+import { CommandContext, Context, InlineKeyboard } from "grammy";
 import { DateTime } from "luxon";
 import * as User from "./user.js";
 import * as Job from "./job.js";
@@ -11,35 +11,40 @@ async function verify(uid: string | undefined) {
 }
 export async function start(ctx: CommandContext<Context>) {
   ctx.replyWithChatAction("typing");
+  const { WEBAPP_URL } = process.env;
+  // const uid = ctx.from?.id.toString();
+  // const user = await verify(uid);
 
-  const uid = ctx.from?.id.toString();
-  const user = await verify(uid);
-
-  if (user) {
-    return ctx.reply(
-      `🤔 Looks like you don't belong to a *Group* using *Tidy*\\. You will need to join, create or get invited to one in order to use *Tidy*\\.`,
-      {
-        parse_mode: "MarkdownV2",
-      }
-    );
-  }
-  return ctx.reply(
-    `🎉 Welcome to *Tidy*\\. To get started you can use the menu button or do */help* to get a list of commands\\. Happy *Tidying*\\!`,
-    { parse_mode: "MarkdownV2" }
-  );
+  // if (user) {
+  //   return ctx.reply(
+  //     `🤔 Looks like you don't belong to a *Group* using *Tidy*\\. You will need to join, create or get invited to one in order to use *Tidy*\\.`,
+  //     {
+  //       parse_mode: "MarkdownV2",
+  //     }
+  //   );
+  // }
+  // return ctx.reply(
+  //   `🎉 Welcome to *Tidy*\\. To get started you can use the menu button or do */help* to get a list of commands\\. Happy *Tidying*\\!`,
+  //   { parse_mode: "MarkdownV2" }
+  // );
 
   // if (claims.length) {
-  //   const keyboard = new InlineKeyboard();
+  const keyboard = new InlineKeyboard();
   //   claims.forEach((claim) => {
   //     const { displayName } = claim;
   //     const u = new URLSearchParams(claim).toString();
 
   //     keyboard.webApp(`${displayName}`, `${WEBAPP_URL}/?${u}`).row();
+  keyboard.webApp(`View Schedule`, `${WEBAPP_URL}`).row();
   //   });
-  //   return ctx.reply(`*Let's get started 🧼*\n\nChoose a Job to checkin\\!`, {
-  //     parse_mode: "MarkdownV2",
-  //     reply_markup: keyboard,
-  //   });
+  // return ctx.reply(`*Let's get started 🧼*\n\nChoose a Job to checkin\\!`, {
+  //   parse_mode: "MarkdownV2",
+  //   reply_markup: keyboard,
+  // });
+  // return ctx.reply(`*Let's get started 🧼*\n\nChoose a Job to checkin\\!`, {
+  //   parse_mode: "MarkdownV2",
+  //   reply_markup: keyboard,
+  // });
   // }
 }
 
@@ -86,7 +91,7 @@ export async function claimed(ctx: CommandContext<Context>) {
     }
     let message = `🗒️ *Your claimed Jobs*\\.\n\n`;
     jobs.forEach((job) => {
-      const date = DateTime.fromJSDate(job.date.toDate()).toFormat("DDD");
+      const date = DateTime.fromJSDate(job.date.toDate()).toFormat("DDDD");
       message += `*\`/unclaim ${job.id}\`*\n*${job.name}* \\- _${date}_\n\n`;
     });
     return ctx.reply(message, {
@@ -115,7 +120,7 @@ export async function unclaimed(ctx: CommandContext<Context>) {
       });
     }
     jobs.forEach((job) => {
-      const date = DateTime.fromJSDate(job.date.toDate()).toFormat("DDD");
+      const date = DateTime.fromJSDate(job.date.toDate()).toFormat("DDDD");
       message += `*\`/claim ${job.id}\`*\n*${job.name}* \\- _${date}_\n\n`;
     });
 
