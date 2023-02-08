@@ -16,7 +16,7 @@ const credential = admin.credential.applicationDefault();
 admin.initializeApp({ credential });
 
 const app = express();
-
+app.use(express.json());
 app.use(webhookCallback(bot));
 function onJobs(message: string) {
   logger.log(message);
