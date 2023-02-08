@@ -179,8 +179,8 @@ export const syncCalendar = async (
       //remove the booking, will check bookings to see if new ones where added
       delete bookings[job.id];
 
-      //if dates are not equal update the job and tasks date. Send a notification
-      if (!d1.equals(d2)) {
+      //if day is not equal update the job and tasks date. Send a notification
+      if (!d1.hasSame(d2, "day")) {
         const t1 = DateTime.fromJSDate(date).minus({ hour: 1 }).toJSDate();
         const t2 = DateTime.fromJSDate(date).minus({ hour: 14 }).toJSDate();
         taskUpdates.push({ date: t1 }, { date: t2 });
