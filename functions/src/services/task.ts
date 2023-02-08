@@ -100,9 +100,6 @@ export const execute = async (cb: (task: FirebaseTask) => void) => {
       "minute"
     );
     //if there is a difference of 5 mins or less to the time, execute
-    if (dateDiff.as("minute") <= 5) {
-      cb(task);
-      return;
-    }
+    if (dateDiff.as("minute") <= 5) cb(task);
   });
 };
