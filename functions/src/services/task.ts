@@ -1,7 +1,7 @@
 import admin from "firebase-admin";
 import { Timestamp } from "firebase-admin/firestore";
 import { DateTime } from "luxon";
-import * as Sugar from "sugar";
+import Sugar from "sugar";
 type status = "scheduled" | "completed" | "error";
 export interface FirebaseTask {
   id: string;
@@ -89,17 +89,18 @@ export const execute = async (cb: (task: FirebaseTask) => void) => {
   if (querySnapshots.empty) return;
   querySnapshots.forEach((querySnapshot) => {
     const task = querySnapshot.data() as FirebaseTask;
+
     const nowdate = Sugar.Date.create(
-      DateTime.fromJSDate(now).toFormat("LLL dd yyyy hh:mma")
+      DateTime.fromJSDate(now).toFormat("LLL dd yyyy HH:mma")
     );
     const date = Sugar.Date.create(
-      DateTime.fromJSDate(task.date.toDate()).toFormat("LLL dd yyyy hh:mma")
+      DateTime.fromJSDate(task.date.toDate()).toFormat("LLL dd yyyy HH:mma")
     );
     const dateDiff = DateTime.fromJSDate(nowdate).diff(
       DateTime.fromJSDate(date),
       "minute"
     );
-    //if there is a difference of 5 mins or less to the time, execute
+    // if there is a difference of 5 mins or less to the time, execute
     if (dateDiff.as("minute") <= 5) cb(task);
   });
 };

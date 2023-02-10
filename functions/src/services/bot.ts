@@ -21,7 +21,7 @@ const bot = new Bot(process.env.BOT_TOKEN);
 //   { scope: { type: "all_chat_administrators" } }
 // );
 
-bot.api.setMyCommands([{ command: "start", description: "Start Tidy" }]);
+await bot.api.setMyCommands([{ command: "start", description: "Start Tidy" }]);
 
 bot.command("start", commands.start);
 // pm.command("claim", commands.claim);
