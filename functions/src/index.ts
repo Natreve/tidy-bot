@@ -42,4 +42,4 @@ export const Ticker = functions
     execute(onTask);
   });
 
-// export const TidyBot = functions.https.onRequest(app);
+export const TidyBot = functions.https.onRequest(app);
