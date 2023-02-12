@@ -5,7 +5,11 @@ import { Timestamp } from "firebase-admin/firestore";
 import { DateTime } from "luxon";
 import * as Task from "./task.js";
 export type status = "claimed" | "unclaimed" | "completed";
-export type CalendarType = { name: string; url: string };
+export type CalendarType = {
+  name: string;
+  url: string;
+  options?: { [key: string]: any };
+};
 export interface FirebaseJob {
   id: string;
   group: string | null;
@@ -124,7 +128,8 @@ export const fetchBookings = async (name: string, url: string) => {
   }
 };
 export const createJobsAndTasksFrom = (
-  bookings: Booking
+  bookings: Booking,
+  options: { [key: string]: any }
 ): [Job[], Task.Task[]] => {
   const jobs: Job[] = [];
   const tasks: Task.Task[] = [];
@@ -140,17 +145,16 @@ export const createJobsAndTasksFrom = (
       name,
       status: "unclaimed",
       group: null,
+      options,
     });
   }
   return [jobs, tasks];
 };
-export const syncCalendar = async (
-  { name, url }: CalendarType,
-  cb?: (x: Job[], message: string) => void
-) => {
+type SyncCF = (x: Job[], message: string) => void;
+export const syncCalendar = async (calendar: CalendarType, cb?: SyncCF) => {
   const firestore = admin.firestore();
   const db = firestore.collection("jobs");
-
+  const { name, url, options } = calendar;
   try {
     const bookings = await fetchBookings(name, url);
     if (!bookings) return;
@@ -160,7 +164,7 @@ export const syncCalendar = async (
 
     //if the query turns up empty add all bookings as new jobs with their tasks
     if (querySnapshots.empty) {
-      const [jobs, tasks] = createJobsAndTasksFrom(bookings);
+      const [jobs, tasks] = createJobsAndTasksFrom(bookings, options || {});
 
       // add new jobs and tasks
       await add(jobs);
@@ -193,7 +197,7 @@ export const syncCalendar = async (
     });
     //if there are bookings remaining, it indicates new bookings and should be added to jobs & tasks
     if (Object.keys(bookings).length) {
-      const [jobs, tasks] = createJobsAndTasksFrom(bookings);
+      const [jobs, tasks] = createJobsAndTasksFrom(bookings, options || {});
       // // send notification of the newly added jobs
       await add(jobs);
       await Task.add(tasks);

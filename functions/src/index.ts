@@ -30,8 +30,16 @@ export const Ticker = functions
   .runWith({ memory: "2GB" })
   .pubsub.schedule("every 1 minutes")
   .onRun(async (ctx) => {
-    const c1 = { name: "Harbour Drive", url: process.env.HARBOURDRIVE };
-    const c2 = { name: "Coralway", url: process.env.CORLWAY };
+    const c1 = {
+      name: "Harbour Drive",
+      url: process.env.HARBOURDRIVE,
+      options: { background: "#5a9ab2" },
+    };
+    const c2 = {
+      name: "Coralway",
+      url: process.env.CORLWAY,
+      options: { background: "#91c33b" },
+    };
 
     syncCalendar(c1, (jobs, message) =>
       onJobs(`${jobs.length} ${message}`)
