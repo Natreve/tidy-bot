@@ -2,26 +2,26 @@ import admin from "firebase-admin";
 import functions, { logger } from "firebase-functions";
 import express from "express";
 import { bot, webhookCallback } from "./services/bot.js";
-import fs from "fs-extra";
+// import fs from "fs-extra";
 import * as dotenv from "dotenv";
 import { syncCalendar } from "./services/job.js";
 import { execute, FirebaseTask } from "./services/task.js";
 dotenv.config();
 
-const serviceAccount = fs.readJSONSync("../service-account.json");
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// const serviceAccount = fs.readJSONSync("../service-account.json");
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
 
-// const credential = admin.credential.applicationDefault();
-// admin.initializeApp({ credential });
+const credential = admin.credential.applicationDefault();
+admin.initializeApp({ credential });
 
 const app = express();
 app.use(express.json());
 app.use(webhookCallback(bot));
 
 
-bot.start()
+// bot.start()
 
 function onJobs(message: string) {
   logger.log(message);

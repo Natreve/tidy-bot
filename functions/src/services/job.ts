@@ -4,7 +4,7 @@ import Sugar from "sugar";
 import { Timestamp } from "firebase-admin/firestore";
 import { DateTime } from "luxon";
 import * as Task from "./task.js";
-export type status = "claimed" | "unclaimed" | "completed";
+export type status = "scheduled" | "completed";
 export type CalendarType = {
   name: string;
   url: string;
@@ -25,7 +25,7 @@ export interface Job {
   name: string;
   date: Date;
   status: status;
-  assigned?: string;
+  assigned?: string | null;
   options?: { [key: string]: any };
 }
 export interface Booking {
@@ -143,8 +143,9 @@ export const createJobsAndTasksFrom = (
       id,
       date,
       name,
-      status: "unclaimed",
+      status: "scheduled",
       group: null,
+      assigned: null,
       options,
     });
   }
@@ -158,7 +159,7 @@ export const syncCalendar = async (calendar: CalendarType, cb?: SyncCF) => {
   try {
     const bookings = await fetchBookings(name, url);
     if (!bookings) return;
-   
+
     const ids = Object.keys(bookings).map((id) => id);
     const querySnapshots = await db.where("id", "in", ids).get();
 
