@@ -6,7 +6,7 @@ export interface UserType {
   uid: string;
   first_name?: string;
   last_name?: string;
-  group?: number | string;
+  group?: string;
   type?: usertype;
   username?: string;
 }

@@ -9,7 +9,11 @@
     "target": "ESNext",
     "allowJs": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports":true
+    "allowSyntheticDefaultImports": true
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
   },
   "compileOnSave": true,
   "include": ["src", "src/**/*.d.ts"]

@@ -158,7 +158,7 @@ export const syncCalendar = async (calendar: CalendarType, cb?: SyncCF) => {
   try {
     const bookings = await fetchBookings(name, url);
     if (!bookings) return;
-    // bookings["testID"] = { id: "testID", name, date: new Date() };
+   
     const ids = Object.keys(bookings).map((id) => id);
     const querySnapshots = await db.where("id", "in", ids).get();
 
