@@ -11,7 +11,7 @@ export async function onGroup(ctx: Filter<AuthContext, "message">) {
   switch (ctx.myChatMember?.new_chat_member.status) {
     case "administrator":
       ctx.reply(
-        `Nice\\!, Now that I'm apart of your group, current members can follow the link *🧼[Tidy](${BOT_URL}?start=${ctx.chat.id})* to gain access to my functions\\. New members will automatically have access granded as well\\.`,
+        `Nice\\!, Now that I'm apart of your group, current members can follow the link *🧼[Tidy](${BOT_URL}?start=${ctx.chat.id})* to gain access to my functions\\. New members will automatically have access granted as well\\.`,
         { parse_mode: "MarkdownV2" }
       );
 
