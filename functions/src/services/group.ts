@@ -1,10 +1,17 @@
 import admin from "firebase-admin";
 
 type GroupType = "supergroup" | "group";
+
+type CalendarType = {
+  name: string;
+  url: string;
+  options?: { [key: string]: any };
+};
 export interface Group {
   id: string;
   title: string;
   type: GroupType;
+  calendars?: CalendarType[];
 }
 export const get = async (id: string) => {
   const firestore = admin.firestore();
