@@ -53,7 +53,10 @@ export const add = async (tasks: Task | Task[]) => {
   const batch = firestore.batch();
   try {
     if (Array.isArray(tasks)) {
-      tasks.forEach((task) => batch.set(db.doc(task.id), task));
+      tasks.forEach((task) => {
+        let doc = db.doc();
+        batch.set(doc, task);
+      });
       await batch.commit();
       return;
     }
@@ -80,7 +83,7 @@ export const update = async (id: string | string[], update: TaskUpdate) => {
 export const execute = async (cb: (task: FirebaseTask) => void) => {
   const firestore = admin.firestore();
   const db = firestore.collection("tasks");
-  const now = admin.firestore.Timestamp.now().toDate();
+  const now = admin.firestore.Timestamp.now();
   // Query all tasks ready to be performed
   const querySnapshots = await db
     .where("date", "<=", now)
@@ -91,7 +94,9 @@ export const execute = async (cb: (task: FirebaseTask) => void) => {
     const task = querySnapshot.data() as FirebaseTask;
 
     const nowdate = Sugar.Date.create(
-      DateTime.fromJSDate(now).toFormat("LLL dd yyyy HH:mma")
+      DateTime.fromJSDate(now.toDate())
+        .minus({ hours: 5 })
+        .toFormat("LLL dd yyyy HH:mma")
     );
     const date = Sugar.Date.create(
       DateTime.fromJSDate(task.date.toDate()).toFormat("LLL dd yyyy HH:mma")
@@ -100,7 +105,8 @@ export const execute = async (cb: (task: FirebaseTask) => void) => {
       DateTime.fromJSDate(date),
       "minute"
     );
+
     // if there is a difference of 5 mins or less to the time, execute
-    if (dateDiff.as("minute") <= 5) cb(task);
+    if (dateDiff.as("minutes") <= 5) cb(task);
   });
 };

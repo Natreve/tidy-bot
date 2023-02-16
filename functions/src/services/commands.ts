@@ -1,6 +1,6 @@
 import { Filter, InlineKeyboard } from "grammy";
 import { AuthContext } from "./auth.js";
-
+import * as User from "./user.js";
 export async function start(ctx: Filter<AuthContext, "message">) {
   const { WEBAPP_URL } = process.env;
   const group = ctx.match;
@@ -17,6 +17,20 @@ export async function start(ctx: Filter<AuthContext, "message">) {
   //if user is apart of a group and used the group link but account was not created, create a account and walk then through
   //there is no real way to know if the person is actually apart of the group because once they have access to the link they are still created
   if (group && !ctx.user) {
+    ctx.reply(`Hang tight, we're setting up your account!.`);
+    await User.add({
+      uid: ctx.from.id.toString(),
+      first_name: ctx.from.first_name,
+      last_name: ctx.from.last_name,
+      username: ctx.from.last_name,
+      group: group.toString(),
+    });
+    const keyboard = new InlineKeyboard();
+    keyboard.webApp("Let's start 🧼 Tidying!", WEBAPP_URL);
+    await ctx.reply(
+      `Welcome to *Tidy\\!* the bot that helps you manage your cleaning\\. To get started you can use the menu button at the bottom left to quickly get started or you can launch the webapp using the link below\\.`,
+      { parse_mode: "MarkdownV2", reply_markup: keyboard }
+    );
     return;
   }
 
